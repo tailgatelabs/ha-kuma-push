@@ -1,7 +1,7 @@
 {
   "domain": "kuma_push",
   "name": "Uptime Kuma Push",
-  "codeowners": ["@tailgatelabs"],
+  "codeowners": ["@crbn60"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/tailgatelabs/ha-kuma-push",

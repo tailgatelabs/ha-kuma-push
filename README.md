@@ -87,3 +87,7 @@ pip install -r requirements_test.txt
 ruff check . && ruff format --check .
 pytest   # enforces 100% coverage
 ```
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
