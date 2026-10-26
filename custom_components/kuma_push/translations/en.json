@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Create a **Push** monitor in Uptime Kuma and paste its push URL. Set the monitor's heartbeat interval in Uptime Kuma to at least the push interval below.",
+        "data": {
+          "push_url": "Push URL",
+          "interval": "Push interval"
+        },
+        "data_description": {
+          "push_url": "For example https://kuma.example.com/api/push/abc123. Any query string is ignored.",
+          "interval": "Seconds between pushes."
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Not a valid Uptime Kuma push URL (expected …/api/push/TOKEN).",
+      "cannot_connect": "Failed to connect to Uptime Kuma.",
+      "rejected": "Uptime Kuma rejected the push. Check the token and that the monitor is active."
+    },
+    "abort": {
+      "already_configured": "This push URL is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "interval": "Push interval"
+        },
+        "data_description": {
+          "interval": "Seconds between pushes."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "status": {
+        "name": "Push status"
+      }
+    },
+    "sensor": {
+      "next_push": {
+        "name": "Next push"
+      },
+      "last_success": {
+        "name": "Last successful push"
+      }
+    }
+  }
+}

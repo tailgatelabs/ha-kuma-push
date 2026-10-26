@@ -1,0 +1,33 @@
+[project]
+name = "ha-kuma-push"
+version = "0.1.0"
+description = "Home Assistant integration that pushes heartbeats to Uptime Kuma"
+requires-python = ">=3.13"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--cov=custom_components.kuma_push --cov-report=term-missing --cov-fail-under=100"
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+  "A", "ASYNC", "B", "C4", "D", "E", "F", "FLY", "G", "I", "LOG", "PERF",
+  "PGH", "PIE", "PL", "PT", "PYI", "RET", "RSE", "RUF", "S", "SIM", "SLOT",
+  "T10", "T20", "TID", "TRY", "UP", "W",
+]
+ignore = ["D203", "D213", "E501", "PLR2004", "PLR0913", "S101", "TRY003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D103"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["custom_components", "homeassistant"]
+combine-as-imports = true

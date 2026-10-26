@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "sensor": {
+      "next_push": {
+        "default": "mdi:timer-outline"
+      },
+      "last_success": {
+        "default": "mdi:heart-pulse"
+      }
+    }
+  }
+}
