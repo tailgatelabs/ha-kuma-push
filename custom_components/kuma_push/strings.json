@@ -8,7 +8,7 @@
           "interval": "Push interval"
         },
         "data_description": {
-          "push_url": "For example https://kuma.example.com/api/push/abc123. Any query string is ignored.",
+          "push_url": "For example {example_url}. Any query string is ignored.",
           "interval": "Seconds between pushes."
         }
       }

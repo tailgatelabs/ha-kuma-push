@@ -40,6 +40,8 @@ from .const import (
     MIN_INTERVAL,
 )
 
+EXAMPLE_URL = "https://kuma.example.com/api/push/abc123"
+
 INTERVAL_SELECTOR = vol.All(
     NumberSelector(
         NumberSelectorConfig(
@@ -103,6 +105,7 @@ class KumaPushConfigFlow(ConfigFlow, domain=DOMAIN):
                 user_input,
             ),
             errors=errors,
+            description_placeholders={"example_url": EXAMPLE_URL},
         )
 
     @staticmethod
