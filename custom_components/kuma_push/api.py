@@ -75,8 +75,8 @@ async def async_push(
 ) -> int:
     """Send an ``up`` heartbeat and return the round-trip time in milliseconds.
 
-    Redirects are not followed: following them would send any Access headers to
-    another host, and an Access login redirect would end in an HTML page.
+    Redirects are not followed when ``headers`` are set, because following them
+    would send the Access headers to another host.
     """
     params = {"status": "up", "msg": "OK"}
     if ping_ms is not None:
@@ -89,10 +89,11 @@ async def async_push(
             params=params,
             headers=headers,
             timeout=_TIMEOUT,
-            allow_redirects=False,
+            allow_redirects=not headers,
         ) as resp:
             status = resp.status
-            location = resp.headers.get("Location", "")
+            # A followed redirect has no Location left, only its final URL.
+            location = resp.headers.get("Location") or str(resp.url)
             try:
                 payload = await resp.json(content_type=None)
             except ValueError:
@@ -105,7 +106,7 @@ async def async_push(
         ) from err
     latency = round((monotonic() - start) * 1000)
 
-    if status in (401, 403) or (300 <= status < 400 and _is_access_login(location)):
+    if status in (401, 403) or _is_access_login(location):
         raise KumaPushAuthError(
             f"Access denied (HTTP {status}); check the Cloudflare Access service token"
         )

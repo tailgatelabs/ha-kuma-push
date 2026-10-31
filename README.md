@@ -27,9 +27,6 @@ Manual alternative: copy `custom_components/kuma_push` into your `config/custom_
 
 The interval can be changed later via **Configure**. Add the integration once per push monitor.
 
-Redirects are not followed. If the push URL redirects (for example `http://` to `https://`),
-the push fails with the redirect target in the error; use that URL instead.
-
 ### Behind Cloudflare Access
 
 If Uptime Kuma is protected by [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/access-controls/),
@@ -41,6 +38,10 @@ pushes can authenticate with a [service token](https://developers.cloudflare.com
    that includes the token. An **Allow** policy will not accept it.
 3. In the config flow, expand **Cloudflare Access** and enter the Client ID and Client Secret.
    They are sent as `CF-Access-Client-Id` and `CF-Access-Client-Secret` on every push.
+
+With a token set, redirects are not followed, so the secret can't reach another host. If the push
+URL redirects (for example `http://` to `https://`), the push fails with the redirect target in
+the error; use that URL instead.
 
 To scope the token narrowly, put the Access application on the `/api/push/` path only, or
 add a **Require** rule for your Home Assistant's IP. Turning on

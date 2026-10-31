@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import aiohttp
 import pytest
 from pytest_homeassistant_custom_component.test_util.aiohttp import (
     AiohttpClientMocker,
+    AiohttpClientMockResponse,
 )
+from yarl import URL
 
 from custom_components.kuma_push.api import (
     KumaPushAuthError,
@@ -153,4 +157,46 @@ async def test_push_errors(
     """Failures map to typed errors with readable messages."""
     aioclient_mock.get(PUSH_URL, **kwargs)
     with pytest.raises(error, match=message):
+        await async_push(
+            async_get_clientsession(hass),
+            PUSH_URL,
+            headers=access_headers("id.access", "secret"),
+        )
+
+
+@pytest.mark.parametrize(
+    ("headers", "follows"),
+    [(None, True), ({"CF-Access-Client-Id": "id.access"}, False)],
+)
+async def test_push_follows_redirects_without_headers(
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+    headers: dict[str, str] | None,
+    follows: bool,
+) -> None:
+    """Redirects are followed unless Access headers could leak to another host."""
+    aioclient_mock.get(PUSH_URL, json={"ok": True})
+    session = async_get_clientsession(hass)
+    with patch.object(session, "get", wraps=session.get) as mock_get:
+        await async_push(session, PUSH_URL, headers=headers)
+
+    assert mock_get.call_args.kwargs["allow_redirects"] is follows
+
+
+async def test_push_followed_redirect_to_access_login(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Landing on the Access login page after a redirect is an auth failure."""
+
+    async def login_page(
+        method: str, url: URL, data: None
+    ) -> AiohttpClientMockResponse:
+        return AiohttpClientMockResponse(
+            method,
+            URL("https://team.cloudflareaccess.com/cdn-cgi/access/login/kuma"),
+            text="<html>",
+        )
+
+    aioclient_mock.get(PUSH_URL, side_effect=login_page)
+    with pytest.raises(KumaPushAuthError):
         await async_push(async_get_clientsession(hass), PUSH_URL)
