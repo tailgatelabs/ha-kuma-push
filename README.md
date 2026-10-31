@@ -6,7 +6,7 @@ heartbeats stop and Uptime Kuma alerts you.
 
 - One HTTP GET per interval, nothing else. No polling of Uptime Kuma, no dependencies.
 - Reports the round-trip time of the previous push as Uptime Kuma's `ping`.
-- Configuration: push URL and interval. That's it.
+- Configuration: push URL and interval, plus an optional Cloudflare Access service token.
 
 ## Installation (HACS custom repository)
 
@@ -26,6 +26,30 @@ Manual alternative: copy `custom_components/kuma_push` into your `config/custom_
    sent before the entry is created.
 
 The interval can be changed later via **Configure**. Add the integration once per push monitor.
+
+### Behind Cloudflare Access
+
+If Uptime Kuma is protected by [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/access-controls/),
+pushes can authenticate with a [service token](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/):
+
+1. In Zero Trust, go to **Access controls → Service credentials → Service Tokens** and create a
+   token. Copy the Client ID and Client Secret (the secret is shown only once).
+2. On the Access application covering the push URL, add a policy with action **Service Auth**
+   that includes the token. An **Allow** policy will not accept it.
+3. In the config flow, expand **Cloudflare Access** and enter the Client ID and Client Secret.
+   They are sent as `CF-Access-Client-Id` and `CF-Access-Client-Secret` on every push.
+
+With a token set, redirects are not followed, so the secret can't reach another host. If the push
+URL redirects (for example `http://` to `https://`), the push fails with the redirect target in
+the error; use that URL instead.
+
+To scope the token narrowly, put the Access application on the `/api/push/` path only, or
+add a **Require** rule for your Home Assistant's IP. Turning on
+[strict service token authentication](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/#strict-service-token-authentication)
+makes a bad token fail with `401`/`403` instead of a login redirect. The integration handles both.
+
+If Access denies a push, Home Assistant marks the entry as needing re-authentication and asks for
+a new token. To rotate or remove the token at any time, use **⋮ → Reconfigure** on the entry.
 
 ## Entities
 
