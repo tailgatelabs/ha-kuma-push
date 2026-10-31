@@ -24,7 +24,10 @@ from homeassistant.data_entry_flow import FlowResultType
 from .conftest import PUSH_URL, setup_integration
 
 ACCESS = {CONF_ACCESS_CLIENT_ID: "id.access", CONF_ACCESS_CLIENT_SECRET: "secret"}
-ACCESS_HEADERS = {"CF-Access-Client-Id": "id.access", "CF-Access-Client-Secret": "secret"}
+ACCESS_HEADERS = {
+    "CF-Access-Client-Id": "id.access",
+    "CF-Access-Client-Secret": "secret",
+}
 
 
 @pytest.mark.usefixtures("mock_setup_entry", "mock_kuma_ok")
@@ -38,7 +41,11 @@ async def test_user_flow(hass: HomeAssistant) -> None:
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {CONF_PUSH_URL: f"{PUSH_URL}?status=up&msg=OK&ping=", CONF_INTERVAL: 30},
+        {
+            CONF_PUSH_URL: f"{PUSH_URL}?status=up&msg=OK&ping=",
+            CONF_INTERVAL: 30,
+            "cloudflare_access": {},
+        },
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "kuma.example.com"
@@ -67,7 +74,11 @@ async def test_user_flow_push_errors(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
     )
-    user_input = {CONF_PUSH_URL: PUSH_URL, CONF_INTERVAL: 60}
+    user_input = {
+        CONF_PUSH_URL: PUSH_URL,
+        CONF_INTERVAL: 60,
+        "cloudflare_access": {},
+    }
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input
     )
@@ -92,7 +103,11 @@ async def test_user_flow_invalid_url(
     )
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {CONF_PUSH_URL: "https://kuma.example.com/dashboard", CONF_INTERVAL: 60},
+        {
+            CONF_PUSH_URL: "https://kuma.example.com/dashboard",
+            CONF_INTERVAL: 60,
+            "cloudflare_access": {},
+        },
     )
     assert result["type"] is FlowResultType.FORM
     assert result["errors"] == {CONF_PUSH_URL: "invalid_url"}
@@ -111,7 +126,11 @@ async def test_user_flow_already_configured(
     )
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
-        {CONF_PUSH_URL: f"{PUSH_URL}?status=up", CONF_INTERVAL: 60},
+        {
+            CONF_PUSH_URL: f"{PUSH_URL}?status=up",
+            CONF_INTERVAL: 60,
+            "cloudflare_access": {},
+        },
     )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "already_configured"
