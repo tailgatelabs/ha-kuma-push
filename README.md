@@ -39,6 +39,9 @@ pushes can authenticate with a [service token](https://developers.cloudflare.com
 3. In the config flow, expand **Cloudflare Access** and enter the Client ID and Client Secret.
    They are sent as `CF-Access-Client-Id` and `CF-Access-Client-Secret` on every push.
 
+To add a token to an existing entry, use **⋮ → Reconfigure** on the entry. **Configure** only
+changes the interval and doesn't show the token fields.
+
 With a token set, redirects are not followed, so the secret can't reach another host. If the push
 URL redirects (for example `http://` to `https://`), the push fails with the redirect target in
 the error; use that URL instead.
