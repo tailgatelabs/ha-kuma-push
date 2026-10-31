@@ -14,8 +14,8 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import (
     AiohttpClientMocker,
 )
 
-from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNKNOWN
+from homeassistant.config_entries import SOURCE_REAUTH, ConfigEntryState
+from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
@@ -148,3 +148,22 @@ async def test_pushes_with_entities_disabled(
 
     await _tick(hass, freezer)
     assert mock_kuma_ok.call_count == calls + 1
+
+
+async def test_auth_failure_starts_reauth(
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+    mock_config_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """A denied push after setup makes entities unavailable and starts reauth."""
+    aioclient_mock.get(PUSH_URL, json={"ok": True})
+    await setup_integration(hass, mock_config_entry)
+
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(PUSH_URL, status=403)
+    await _tick(hass, freezer)
+
+    assert hass.states.get(STATUS).state == STATE_UNAVAILABLE
+    [flow] = hass.config_entries.flow.async_progress()
+    assert flow["context"]["source"] == SOURCE_REAUTH

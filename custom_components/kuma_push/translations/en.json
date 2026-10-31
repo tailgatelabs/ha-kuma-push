@@ -10,16 +10,58 @@
         "data_description": {
           "push_url": "For example {example_url}. Any query string is ignored.",
           "interval": "Seconds between pushes."
+        },
+        "sections": {
+          "cloudflare_access": {
+            "name": "Cloudflare Access",
+            "description": "Only needed if Uptime Kuma is behind Cloudflare Access. Create a service token and add it to a **Service Auth** policy on the Access application. Leave empty otherwise.",
+            "data": {
+              "access_client_id": "Client ID",
+              "access_client_secret": "Client secret"
+            },
+            "data_description": {
+              "access_client_id": "Service token Client ID, ending in `.access`.",
+              "access_client_secret": "Service token Client Secret."
+            }
+          }
+        }
+      },
+      "reauth_confirm": {
+        "title": "Cloudflare Access denied the push",
+        "description": "Pushes to {host} were denied. Enter a Cloudflare Access service token that a **Service Auth** policy allows, or leave both fields empty to push without one.",
+        "data": {
+          "access_client_id": "Client ID",
+          "access_client_secret": "Client secret"
+        },
+        "data_description": {
+          "access_client_id": "Service token Client ID, ending in `.access`.",
+          "access_client_secret": "Service token Client Secret."
+        }
+      },
+      "reconfigure": {
+        "title": "Cloudflare Access",
+        "description": "Change the Cloudflare Access service token used for {host}. Leave both fields empty to push without one.",
+        "data": {
+          "access_client_id": "Client ID",
+          "access_client_secret": "Client secret"
+        },
+        "data_description": {
+          "access_client_id": "Service token Client ID, ending in `.access`.",
+          "access_client_secret": "Service token Client Secret."
         }
       }
     },
     "error": {
       "invalid_url": "Not a valid Uptime Kuma push URL (expected …/api/push/TOKEN).",
       "cannot_connect": "Failed to connect to Uptime Kuma.",
-      "rejected": "Uptime Kuma rejected the push. Check the token and that the monitor is active."
+      "rejected": "Uptime Kuma rejected the push. Check the token and that the monitor is active.",
+      "invalid_auth": "Access was denied. Check the Cloudflare Access service token and that a Service Auth policy includes it.",
+      "incomplete_access": "Enter both the Client ID and the Client secret, or neither."
     },
     "abort": {
-      "already_configured": "This push URL is already configured."
+      "already_configured": "This push URL is already configured.",
+      "reauth_successful": "Credentials updated.",
+      "reconfigure_successful": "Credentials updated."
     }
   },
   "options": {

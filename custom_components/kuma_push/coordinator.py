@@ -7,12 +7,20 @@ from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
 
-from .api import KumaPushError, async_push
-from .const import CONF_INTERVAL, CONF_PUSH_URL, DOMAIN, LOGGER
+from .api import KumaPushAuthError, KumaPushError, access_headers, async_push
+from .const import (
+    CONF_ACCESS_CLIENT_ID,
+    CONF_ACCESS_CLIENT_SECRET,
+    CONF_INTERVAL,
+    CONF_PUSH_URL,
+    DOMAIN,
+    LOGGER,
+)
 
 type KumaPushConfigEntry = ConfigEntry[KumaPushCoordinator]
 
@@ -32,7 +40,8 @@ class KumaPushCoordinator(DataUpdateCoordinator[PushState]):
 
     A failed push is reported through ``PushState`` rather than ``UpdateFailed``
     so entities stay available and show the failure instead of going
-    unavailable.
+    unavailable. An authentication failure raises ``ConfigEntryAuthFailed``
+    instead so Home Assistant asks for new credentials.
     """
 
     config_entry: KumaPushConfigEntry
@@ -48,6 +57,10 @@ class KumaPushCoordinator(DataUpdateCoordinator[PushState]):
         )
         self._session = async_get_clientsession(hass)
         self._url: str = entry.data[CONF_PUSH_URL]
+        self._headers = access_headers(
+            entry.data.get(CONF_ACCESS_CLIENT_ID),
+            entry.data.get(CONF_ACCESS_CLIENT_SECRET),
+        )
         self._latency_ms: int | None = None
 
     async def _async_update_data(self) -> PushState:
@@ -55,8 +68,11 @@ class KumaPushCoordinator(DataUpdateCoordinator[PushState]):
         previous = self.data
         try:
             self._latency_ms = await async_push(
-                self._session, self._url, self._latency_ms
+                self._session, self._url, self._latency_ms, self._headers
             )
+        except KumaPushAuthError as err:
+            self._latency_ms = None
+            raise ConfigEntryAuthFailed(str(err)) from err
         except KumaPushError as err:
             if previous is None or previous.success:
                 LOGGER.warning("Push to Uptime Kuma failed: %s", err)
